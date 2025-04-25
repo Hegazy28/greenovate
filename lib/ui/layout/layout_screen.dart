@@ -16,6 +16,7 @@ class _LayoutScreenState extends State<LayoutScreen> {
   List<Widget> taps = [
     HomeScreen(),
     CropsScreen(),
+    CropsScreen(),
   ];
   @override
   Widget build(BuildContext context) {
