@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:greenovate/core/constants/app_colors.dart';
 import 'dart:math' as math;
 
-import 'package:greenovate/core/constants/app_styles.dart';
-
+// Placeholder for your custom imports (replace with actual imports)
+const Color black = Colors.black; // Placeholder for AppColors.black
+final TextStyle sairaCondensed24white = TextStyle(fontFamily: 'Saira Condensed', fontSize: 24); // Placeholder for AppStyles.sairaCondensed24white
 
 class CircularArc extends StatefulWidget {
   final double progress;
@@ -30,7 +30,7 @@ class _CircularArcState extends State<CircularArc>
   void initState() {
     super.initState();
     animController =
-    AnimationController(duration: Duration(seconds: 2), vsync: this);
+        AnimationController(duration: Duration(seconds: 2), vsync: this);
     _setupAnimation(widget.progress);
   }
 
@@ -51,13 +51,22 @@ class _CircularArcState extends State<CircularArc>
     animation = Tween<double>(begin: startProgress, end: endProgress)
         .animate(curvedAnimation)
       ..addListener(() {
-        setState(() {});
+        if (mounted) { // Check if the widget is still mounted
+          setState(() {});
+        }
       });
 
     animController
       ..reset()
       ..forward();
     previousProgress = newProgress;
+  }
+
+  @override
+  void dispose() {
+    animController.stop(); // Stop the animation
+    animController.dispose(); // Dispose of the controller
+    super.dispose();
   }
 
   @override
@@ -99,12 +108,13 @@ class _CircularArcState extends State<CircularArc>
               height: 240.w,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: Colors.white
+                color: Colors.white,
               ),
             ),
             Text(
               "${(animation.value / math.pi * 100).round()}$unit",
-              style: AppStyles.sairaCondensed24white.copyWith(color: AppColors.black,fontSize: 30.sp)
+              style: sairaCondensed24white.copyWith(
+                  color: black, fontSize: 30.sp),
             ),
           ],
         ),
@@ -143,40 +153,37 @@ class ProgressArc extends CustomPainter {
 }
 
 class DashedArcPainter extends CustomPainter {
-  final double progress; // Receive progress value
+  final double progress;
 
   DashedArcPainter(this.progress);
 
   @override
   void paint(Canvas canvas, Size size) {
-    final outerRadius = size.width / 2 + 15; // Increase radius for outer arc
+    final outerRadius = size.width / 2 + 15;
     final rect = Rect.fromLTWH(size.width / 2 - outerRadius,
         size.height / 2 - outerRadius, outerRadius * 2, outerRadius * 2);
-    final startAngle = -math.pi; // Start at the left
-    final sweepAngle = progress + 0.1; // Arc covers the same angle as main arc
+    final startAngle = -math.pi;
+    final sweepAngle = progress + 0.1;
 
     final paint = Paint()
       ..color = Colors.green.shade300
       ..style = PaintingStyle.stroke
-      ..strokeWidth = 4; // Adjust thickness if needed
+      ..strokeWidth = 4;
 
-    final dashWidth = 3; // Length of each dash
-    final dashSpace = 1; // Space between dashes
+    const dashWidth = 3;
+    const dashSpace = 1;
 
-    // Total number of dashes
     final totalDashes = (sweepAngle /
             (dashWidth / outerRadius * 2 * math.pi +
                 dashSpace / outerRadius * 2 * math.pi))
         .floor();
 
     for (int i = 0; i < totalDashes; i++) {
-      // Calculate the start and end angles for each dash
       final dashStartAngle =
           startAngle + i * (dashWidth + dashSpace) / outerRadius * 2 * math.pi;
       final dashEndAngle =
           dashStartAngle + dashWidth / outerRadius * 2 * math.pi;
 
-      // Draw each dash
       canvas.drawArc(
           rect, dashStartAngle, dashEndAngle - dashStartAngle, false, paint);
     }

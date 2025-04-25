@@ -28,7 +28,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 borderRadius: BorderRadius.only(
                     bottomRight: Radius.circular(40),
                     bottomLeft: Radius.circular(40)),
-                color: Color(0xff46634D)),
+                color: AppColors.primary),
             child: SafeArea(
               child: CircularArc(
                 progress: SensorModel.Sensors[_selectedIndex].value,

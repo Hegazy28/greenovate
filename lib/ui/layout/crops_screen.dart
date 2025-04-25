@@ -2,8 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:greenovate/core/constants/app_colors.dart';
 import 'package:greenovate/core/constants/app_styles.dart';
-import 'package:greenovate/core/models/sensor_model.dart';
-import 'package:greenovate/core/widgets/arc.dart';
+import 'package:greenovate/core/models/crops_data.dart';
 
 class CropsScreen extends StatefulWidget {
   const CropsScreen({super.key});
@@ -17,108 +16,61 @@ class _CropsScreenState extends State<CropsScreen> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      margin: EdgeInsets.only(bottom: 10 ),
+      margin: EdgeInsets.only(bottom: 10),
       decoration: BoxDecoration(color: AppColors.bgColor),
-      child: Column(
-        children: [
-          Container(
-            clipBehavior: Clip.antiAlias,
-            height: 380.h,
-            decoration: BoxDecoration(
-                borderRadius: BorderRadius.only(
-                    bottomRight: Radius.circular(40),
-                    bottomLeft: Radius.circular(40)),
-                color: Color(0xff46634D)),
-            child: SafeArea(
-              child: CircularArc(
-                progress: SensorModel.Sensors[_selectedIndex].value,
-                unit: SensorModel.Sensors[_selectedIndex].unit,
-              ),
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 15),
-            child: Row(
-              children: [
-                Text(
-                  'Show Sensor status',
-                  style: AppStyles.sairaCondensed16white.copyWith(
-                      color: Colors.black,
-                      decoration: TextDecoration.underline,
-                      fontSize: 20.sp,
-                      fontWeight: FontWeight.bold),
+      child: SafeArea(
+        child: Column(
+          children: [
+            Container(
+              clipBehavior: Clip.antiAlias,
+              height: 50.h,
+              decoration: BoxDecoration(
+                  borderRadius: BorderRadius.only(
+                      bottomRight: Radius.circular(20),
+                      bottomLeft: Radius.circular(20)),
+                  color: AppColors.primary),
+              child: Center(
+                child: Text.rich(
+                  TextSpan(children: [
+                    TextSpan(
+                        text: 'Selected Crop : ',
+                        style: AppStyles.sairaCondensed24white
+                            .copyWith(fontWeight: FontWeight.bold)),
+                    TextSpan(
+                        text: 'Tomato', style: AppStyles.sairaCondensed24white),
+                  ]),
                 ),
-              ],
-            ),
-          ),
-          Expanded(
-            child: ListView.separated(
-              separatorBuilder: (context, index) => SizedBox(
-                width: 20.w,
               ),
-              itemCount: SensorModel.Sensors.length,
-              padding: EdgeInsets.symmetric(horizontal: 10),
-              scrollDirection: Axis.horizontal,
-              itemBuilder: (context, index) => InkWell(
-                onTap: () {
-                  _selectedIndex = index;
-                  setState(() {});
-                },
-                child: Container(
-                  padding: EdgeInsets.symmetric(vertical: 10),
+            ),
+            Expanded(
+              child: GridView.builder(
+                itemCount: CropsData.crops.length,
+                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                  childAspectRatio: 0.7,
+                    crossAxisCount: 2),
+                itemBuilder: (context, index) => Container(
+                  clipBehavior: Clip.antiAlias,
+                  padding: EdgeInsets.all(10),
+                  margin: EdgeInsets.all(10),
                   decoration: BoxDecoration(
-                      color: _selectedIndex == index
-                          ? Color(0xff46634D)
-                          : Colors.white,
-                      borderRadius: BorderRadius.all(Radius.circular(30))),
-                  width: 200.w,
+                    borderRadius: BorderRadius.all(Radius.circular(20)),
+                    color: AppColors.primary
+                  ),
                   child: Column(
-                    mainAxisAlignment: MainAxisAlignment.start,
                     children: [
+                      Expanded(child: Image.asset(CropsData.crops[index]["image"])),
                       SizedBox(
-                          height: 70.h,
-                          width: 70.w,
-                          child: Image.asset(
-                            SensorModel.Sensors[index].image,
-                            color: _selectedIndex == index
-                                ? Colors.white
-                                : Colors.black,
-                          )),
-                      Text(
-                        SensorModel.Sensors[index].name,
-                        style: AppStyles.sairaCondensed16white.copyWith(
-                            color: _selectedIndex == index
-                                ? Colors.white
-                                : Colors.black,
-                            fontSize: 20.sp),
-                        textAlign: TextAlign.end,
+                        height: 10,
                       ),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Text(
-                            "${SensorModel.Sensors[index].value}",
-                            style: AppStyles.sairaCondensed24white.copyWith(
-                                fontSize: 40,
-                                color: _selectedIndex == index
-                                    ? Colors.white
-                                    : Colors.black),
-                          ),
-                          Text(SensorModel.Sensors[index].unit,
-                              style: AppStyles.sairaCondensed24white.copyWith(
-                                  fontSize: 30,
-                                  color: _selectedIndex == index
-                                      ? Colors.white
-                                      : Colors.black)),
-                        ],
-                      ),
+                      Text(CropsData.crops[index]["name"],style: AppStyles.sairaCondensed16white,),
+                       
                     ],
                   ),
                 ),
               ),
-            ),
-          ),
-        ],
+            )
+          ],
+        ),
       ),
     );
   }

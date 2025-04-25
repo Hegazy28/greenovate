@@ -3,7 +3,7 @@ class CropsData {
     {
       "id": "tomato",
       "name": "Tomato",
-      "image": "assets/images/try/tomatoo1.png",
+      "image": "assets/images/crops/tomatoo1.png",
       "temp": "20-25°C",
       "humidity": "60-80%",
       "description":
@@ -12,7 +12,7 @@ class CropsData {
     {
       "id": "cucumber",
       "name": "Cucumber",
-      "image": "assets/images/try/cucumber1.png",
+      "image": "assets/images/crops/cucumber1.png",
       "temp": "22-28°C",
       "humidity": "70-90%",
       "description": "High-yield greenhouse crop",
@@ -20,7 +20,7 @@ class CropsData {
     {
       "id": "lettuce",
       "name": "Lettuce",
-      "image": "assets/images/try/lettuce1.png",
+      "image": "assets/images/crops/lettuce1.png",
       "temp": "15-20°C",
       "humidity": "60-70%",
       "description": "Fast-growing leafy green",
@@ -28,7 +28,7 @@ class CropsData {
     {
       "id": "pepper",
       "name": "Bell Pepper",
-      "image": "assets/images/try/pepper1.png",
+      "image": "assets/images/crops/pepper1.png",
       "temp": "20-25°C",
       "humidity": "60-65%",
       "description": "Colorful and nutritious",
