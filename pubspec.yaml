@@ -38,6 +38,7 @@ dependencies:
   flutter_native_splash: ^2.4.4
   google_fonts: ^6.2.1
   animate_do: ^4.2.0
+  local_auth: ^2.3.0
 
 dev_dependencies:
   flutter_test:
