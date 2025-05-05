@@ -5,15 +5,14 @@ import 'package:greenovate/core/constants/app_colors.dart';
 import 'package:greenovate/core/constants/app_styles.dart';
 import 'package:greenovate/core/models/crops_data.dart';
 
-class CropsScreen extends StatefulWidget {
-  const CropsScreen({super.key});
+class ManualScreen extends StatefulWidget {
+  const ManualScreen({super.key});
 
   @override
-  State<CropsScreen> createState() => _CropsScreenState();
+  State<ManualScreen> createState() => _ManualScreenState();
 }
 
-class _CropsScreenState extends State<CropsScreen> {
-  int _selectedIndex = 0;
+class _ManualScreenState extends State<ManualScreen> {
   @override
   Widget build(BuildContext context) {
     return Container(

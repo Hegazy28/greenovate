@@ -1,3 +1,4 @@
+import 'package:animate_do/animate_do.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:greenovate/core/constants/app_colors.dart';
@@ -21,18 +22,20 @@ class _HomeScreenState extends State<HomeScreen> {
       decoration: BoxDecoration(color: AppColors.bgColor),
       child: Column(
         children: [
-          Container(
-            clipBehavior: Clip.antiAlias,
-            height: 380.h,
-            decoration: BoxDecoration(
-                borderRadius: BorderRadius.only(
-                    bottomRight: Radius.circular(40),
-                    bottomLeft: Radius.circular(40)),
-                color: AppColors.primary),
-            child: SafeArea(
-              child: CircularArc(
-                progress: SensorModel.Sensors[_selectedIndex].value,
-                unit: SensorModel.Sensors[_selectedIndex].unit,
+          BounceInDown(
+            child: Container(
+              clipBehavior: Clip.antiAlias,
+              height: 380.h,
+              decoration: BoxDecoration(
+                  borderRadius: BorderRadius.only(
+                      bottomRight: Radius.circular(40),
+                      bottomLeft: Radius.circular(40)),
+                  color: AppColors.primary),
+              child: SafeArea(
+                child: CircularArc(
+                  progress: SensorModel.Sensors[_selectedIndex].value,
+                  unit: SensorModel.Sensors[_selectedIndex].unit,
+                ),
               ),
             ),
           ),

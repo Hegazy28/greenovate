@@ -3,6 +3,7 @@ import 'package:greenovate/core/constants/app_assets.dart';
 import 'package:greenovate/core/constants/app_colors.dart';
 import 'package:greenovate/ui/layout/crops_screen.dart';
 import 'package:greenovate/ui/layout/home_screen.dart';
+import 'package:greenovate/ui/layout/manual_screen.dart';
 
 class LayoutScreen extends StatefulWidget {
   const LayoutScreen({super.key});
@@ -13,9 +14,9 @@ class LayoutScreen extends StatefulWidget {
 
 class _LayoutScreenState extends State<LayoutScreen> {
   int _curentIndex = 0;
-  List<Widget> taps = [
+  final List<Widget> taps = [
     HomeScreen(),
-    CropsScreen(),
+    ManualScreen(),
     CropsScreen(),
   ];
   @override
@@ -23,11 +24,9 @@ class _LayoutScreenState extends State<LayoutScreen> {
     return Scaffold(
       backgroundColor: AppColors.bgColor,
       bottomNavigationBar: ClipRRect(
-        
         borderRadius: BorderRadius.only(
             topLeft: Radius.circular(20), topRight: Radius.circular(20)),
         child: BottomNavigationBar(
-          
           selectedItemColor: AppColors.white,
           unselectedItemColor: AppColors.black,
           currentIndex: _curentIndex,
@@ -48,7 +47,13 @@ class _LayoutScreenState extends State<LayoutScreen> {
           ],
         ),
       ),
-      body: taps[_curentIndex],
+      body:  IndexedStack(
+        index:_curentIndex ,
+        children: taps,
+      )
+      
+      
+       
     );
   }
 }
