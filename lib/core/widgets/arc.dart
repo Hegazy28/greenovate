@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'dart:math' as math;
 
+import 'package:greenovate/core/constants/app_colors.dart';
+import 'package:greenovate/core/constants/app_styles.dart';
+
 // Placeholder for your custom imports (replace with actual imports)
 const Color black = Colors.black; // Placeholder for AppColors.black
 final TextStyle sairaCondensed24white = TextStyle(fontFamily: 'Saira Condensed', fontSize: 24); // Placeholder for AppStyles.sairaCondensed24white
@@ -93,7 +96,7 @@ class _CircularArcState extends State<CircularArc>
               size: Size(260.w, 260.w),
               painter: ProgressArc(
                 animation.value,
-                const Color.fromARGB(255, 0, 255, 21),
+                AppColors.arcDash,
                 false,
               ),
             ),
@@ -113,8 +116,8 @@ class _CircularArcState extends State<CircularArc>
             ),
             Text(
               "${(animation.value / math.pi * 100).round()}$unit",
-              style: sairaCondensed24white.copyWith(
-                  color: black, fontSize: 30.sp),
+              style: AppStyles.sairaCondensed24white  .copyWith(
+                  color: black, fontSize: 36.sp),
             ),
           ],
         ),
@@ -166,7 +169,7 @@ class DashedArcPainter extends CustomPainter {
     final sweepAngle = progress + 0.1;
 
     final paint = Paint()
-      ..color = Colors.green.shade300
+      ..color = AppColors.arcSolid
       ..style = PaintingStyle.stroke
       ..strokeWidth = 4;
 

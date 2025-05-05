@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "77383749731",
+    "project_id": "greenovate-5641c",
+    "storage_bucket": "greenovate-5641c.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:77383749731:android:035174ef871f19c24a6856",
+        "android_client_info": {
+          "package_name": "com.example.greenovate"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCpeFPOvCtFQ15YdrJDk2lVehJU6i1gYLU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

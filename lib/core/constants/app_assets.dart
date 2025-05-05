@@ -9,6 +9,13 @@ class AppAssets {
   static const String sensors = 'assets/images/icons/sensor.png';
   static const String crops = 'assets/images/icons/crops.png';
   static const String manual = 'assets/images/icons/manual.png';
+  static const String lightAct = 'assets/images/icons/growLight.png';
+  static const String nozzleAct = 'assets/images/icons/water.png';
+  static const String airAct = 'assets/images/icons/takyeef.png';
+  static const String fanAct = 'assets/images/icons/fan.png';
+  static const String curtainAct = 'assets/images/icons/curtains.png';
+  static const String pumpAct = 'assets/images/icons/pumb.png';
+  
   
  
 }

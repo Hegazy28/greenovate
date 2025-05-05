@@ -25,11 +25,11 @@ class _CropsScreenState extends State<CropsScreen> {
           children: [
             Container(
               clipBehavior: Clip.antiAlias,
-              height: 50.h,
+              height: 60.h,
               decoration: BoxDecoration(
                   borderRadius: BorderRadius.only(
-                      bottomRight: Radius.circular(20),
-                      bottomLeft: Radius.circular(20)),
+                      bottomRight: Radius.circular(24.r),
+                      bottomLeft: Radius.circular(24.r)),
                   color: AppColors.primary),
               child: Center(
                 child: Text.rich(
@@ -52,10 +52,12 @@ class _CropsScreenState extends State<CropsScreen> {
                 child: Container(
                   margin: EdgeInsets.symmetric(horizontal: 10),
                   decoration: BoxDecoration(
-                    color: AppColors.solidGray,
+                      color: AppColors.solidGray,
                       borderRadius: BorderRadius.only(
                           topLeft: Radius.circular(20),
-                          topRight: Radius.circular(20),bottomLeft: Radius.circular(20),bottomRight: Radius.circular(20))),
+                          topRight: Radius.circular(20),
+                          bottomLeft: Radius.circular(20),
+                          bottomRight: Radius.circular(20))),
                   child: GridView.builder(
                     itemCount: CropsData.crops.length,
                     gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
