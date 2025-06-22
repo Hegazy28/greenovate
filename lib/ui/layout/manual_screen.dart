@@ -4,6 +4,7 @@ import 'package:greenovate/core/constants/app_assets.dart';
 import 'package:greenovate/core/constants/app_colors.dart';
 import 'package:greenovate/core/constants/app_styles.dart';
 import 'package:greenovate/core/models/actuators_model.dart';
+import 'package:greenovate/firebase/firebase_helper.dart';
 
 class ManualScreen extends StatefulWidget {
   const ManualScreen({super.key});
@@ -13,70 +14,115 @@ class ManualScreen extends StatefulWidget {
 }
 
 class _ManualScreenState extends State<ManualScreen> {
-  bool _manualModeEnabled = false;
-  String? espData ;
+  late List<int> act;
   final List<Actuator> _actuators = [
     MultiStageActuator(
       name: "Grow Lights",
       image: AppAssets.lightAct,
       stages: [
         Stage("Off", "Off"),
-        Stage("Blue", "Blue Spectrum"),
-        Stage("Red", "Red Spectrum"),
-        Stage("Full", "Full Spectrum"),
-        Stage("UV", "UV Boost"),
+        Stage("Stage1", "Half Red Spectrum"),
+        Stage("Stage2", "Half Blue & Red Spectrum"),
+        Stage("Stage3", "Full Red Spectrum"),
+        Stage("Stage4", "Full Spectrum"),
       ],
     ),
     SimpleActuator(
       name: "Water Pump",
       image: AppAssets.pumpAct,
+      stages: [
+        Stage("off", "false"),
+        Stage("on", "true"),
+      ],
     ),
     SimpleActuator(
       name: "Fan",
       image: AppAssets.fanAct,
+      stages: [
+        Stage("off", "false"),
+        Stage("on", "true"),
+      ],
     ),
-    SimpleActuator(
+    MultiStageActuator(
       name: "Curtain",
       image: AppAssets.curtainAct,
+      stages: [
+        Stage("Up", "Going Up"),
+        Stage("Down", "Going Down"),
+        Stage("Stop", "Stopped"),
+      ],
     ),
     SimpleActuator(
       name: "Air Conditioning",
       image: AppAssets.airAct,
+      stages: [
+        Stage("off", "false"),
+        Stage("on", "true"),
+      ],
     ),
     SimpleActuator(
       name: "Nozzle",
       image: AppAssets.nozzleAct,
+      stages: [
+        Stage("off", "false"),
+        Stage("on", "true"),
+      ],
     ),
   ];
 
   void _toggleManualMode(bool value) {
     setState(() {
-      _manualModeEnabled = value;
-      if (!value) {
-        for (var actuator in _actuators) {
-          actuator.reset();
-        }
-      }
+      act[1] = value == true ? 1 : 0;
+      int acts = int.parse(act.join(''));
+      //   print(" Actssssssssssssss  $acts");
+      FirebaseHelper.updateDevices(acts);
+    });
+  }
+
+  void _resetActuators(bool value) {
+    setState(() {
+      FirebaseHelper.updateDevices(11000000);
     });
   }
 
   void _changeActuatorState(int index, [bool? value]) {
-    if (!_manualModeEnabled) return;
-    setState(() {
-     
-      if (value != null) {
-        _actuators[index].setState(value);
-      } else {
-        _actuators[index].toggle();
-      }
-       espData =  _actuators.map((e) => e.isOn ? "1" : "0").join();
-      print(espData);
-    });
+    act[index] = value == true ? 1 : 0;
+    int acts = int.parse(act.join(''));
+    // print(" Actssssssssssssss  $acts");
+    FirebaseHelper.updateDevices(acts);
   }
 
-  void _selectGrowLightStage(int stageIndex) {
-    final growLights = _actuators[0] as MultiStageActuator;
-    setState(() => growLights.selectStage(stageIndex));
+  void _selectGrowLightStage(int stageIndex, Actuator actuator) {
+    if (actuator.name == "Grow Lights") {
+      final growLights = _actuators[0] as MultiStageActuator;
+      growLights.selectStage(stageIndex);
+      if (stageIndex == 0) {
+        act[2] = 0;
+      } else if (stageIndex == 1) {
+        act[2] = 1;
+      } else if (stageIndex == 2) {
+        act[2] = 2;
+      } else if (stageIndex == 3) {
+        act[2] = 3;
+      } else {
+        act[2] = 4;
+      }
+    } else {
+      final growLights = _actuators[3] as MultiStageActuator;
+      growLights.selectStage(stageIndex);
+      if (stageIndex == 0) {
+        act[5] = 1;
+      } else if (stageIndex == 1) {
+        act[5] = 2;
+      } else {
+        act[5] = 0;
+      }
+    }
+    int acts = int.parse(act.join(''));
+
+    FirebaseHelper.updateDevices(acts);
+
+    setState(() {});
   }
 
   @override
@@ -84,49 +130,59 @@ class _ManualScreenState extends State<ManualScreen> {
     return Scaffold(
       backgroundColor: AppColors.bgColor,
       body: SafeArea(
-        child: Column(
-          children: [
-            
-            Container(
-              height: 60.h,
-              padding: EdgeInsets.symmetric(vertical: 20.h, horizontal: 24.w),
-              decoration: BoxDecoration(
-                color: AppColors.primary,
-                borderRadius: BorderRadius.only(
-                  bottomLeft: Radius.circular(24.r),
-                  bottomRight: Radius.circular(24.r),
-                ),
-              ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        child: StreamBuilder<List<int>>(
+            stream: FirebaseHelper.listenToDeviceChanges(),
+            builder: (context, snapshot) {
+              if (!snapshot.hasData || snapshot.data == null) {
+                return Center(child: CircularProgressIndicator());
+              }
+              //  print("888888888888888888888888 ${snapshot.data![0]}");
+              act = snapshot.data!;
+              // print("888888888888888888888888 ${act}");
+              return Column(
                 children: [
-                  Text(
-                    'Manual Controls',
-                    style: AppStyles.sairaCondensed16white.copyWith(
-                      fontWeight: FontWeight.w600,
+                  Container(
+                    height: 60.h,
+                    padding:
+                        EdgeInsets.symmetric(vertical: 20.h, horizontal: 24.w),
+                    decoration: BoxDecoration(
+                      color: AppColors.primary,
+                      borderRadius: BorderRadius.only(
+                        bottomLeft: Radius.circular(24.r),
+                        bottomRight: Radius.circular(24.r),
+                      ),
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          'Manual Controls',
+                          style: AppStyles.sairaCondensed16white.copyWith(
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        Switch.adaptive(
+                          value: snapshot.data![1] == 1, //_manualModeEnabled200
+                          onChanged: _toggleManualMode,
+                          trackOutlineColor:
+                              WidgetStateProperty.all(Colors.transparent),
+                          trackOutlineWidth: WidgetStatePropertyAll(4),
+                          activeColor: Colors.white,
+                          activeTrackColor: Colors.green,
+                          inactiveTrackColor: AppColors.solidGray,
+                          inactiveThumbColor: Colors.white,
+                        ),
+                      ],
                     ),
                   ),
-                  Switch.adaptive(
-                    value: _manualModeEnabled,
-                    onChanged: _toggleManualMode,
-                    trackOutlineColor:
-                        WidgetStateProperty.all(Colors.transparent),
-                    trackOutlineWidth: WidgetStatePropertyAll(4),
-                    activeColor: Colors.white,
-                    activeTrackColor: Colors.green,
-                    inactiveTrackColor: AppColors.solidGray,
-                    inactiveThumbColor: Colors.white,
+                  Expanded(
+                    child: snapshot.data![1] == 1
+                        ? _buildControlsGrid()
+                        : _buildDisabledState(),
                   ),
                 ],
-              ),
-            ),
-            Expanded(
-              child: _manualModeEnabled
-                  ? _buildControlsGrid()
-                  : _buildDisabledState(),
-            ),
-          ],
-        ),
+              );
+            }),
       ),
     );
   }
@@ -152,58 +208,74 @@ class _ManualScreenState extends State<ManualScreen> {
   }
 
   Widget _buildActuatorCard(Actuator actuator, int index) {
-    return Card(
-      elevation: 2,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(20.r),
-      ),
-      color: actuator.isOn ? AppColors.activeColor : AppColors.white,
-      child: InkWell(
-        borderRadius: BorderRadius.circular(20.r),
-        splashColor: AppColors.primary,
-        onTap: () => actuator is MultiStageActuator
-            ? _showStageSelectionDialog(actuator)
-            : _changeActuatorState(index, !actuator.isOn),
-        child: Padding(
-          padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 10.h),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Expanded(
-                child: Image.asset(
-                  actuator.image,
-                  color: actuator.isOn ? AppColors.white : AppColors.black,
-                  width: 85.w,
-                  height: 85.h,
+    return StreamBuilder<List<int>>(
+        stream: FirebaseHelper.listenToDeviceChanges(),
+        builder: (context, snapshot) {
+          if (!snapshot.hasData || snapshot.data == null) {
+            return Center(child: CircularProgressIndicator());
+          }
+          return Card(
+            elevation: 2,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(20.r),
+            ),
+            color: snapshot.data![index + 2] != 0
+                ? AppColors.activeColor
+                : AppColors.white,
+            child: InkWell(
+              borderRadius: BorderRadius.circular(20.r),
+              splashColor: AppColors.primary,
+              onTap: () => actuator is MultiStageActuator
+                  ? _showStageSelectionDialog(actuator)
+                  : _changeActuatorState(
+                      index + 2, snapshot.data![index + 2] != 1),
+              child: Padding(
+                padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 10.h),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Expanded(
+                      child: Image.asset(
+                        actuator.image,
+                        color: snapshot.data![index + 2] != 0
+                            ? AppColors.white
+                            : AppColors.black,
+                        width: 85.w,
+                        height: 85.h,
+                      ),
+                    ),
+                    SizedBox(height: 6.h),
+                    Text(
+                      actuator.name,
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        color: snapshot.data![index + 2] != 0
+                            ? AppColors.white
+                            : AppColors.black,
+                        fontSize: 20.sp,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                    SizedBox(height: 2.h),
+                    if (actuator is MultiStageActuator)
+                      _buildStageIndicator(actuator)
+                    else
+                      Switch.adaptive(
+                        value: snapshot.data![index + 2] ==
+                            1, // Assuming 1 means ON
+                        onChanged: (value) =>
+                            _changeActuatorState(index + 2, value),
+                        activeColor: Colors.white,
+                        trackOutlineColor: WidgetStateProperty.all(Colors.grey),
+                        inactiveTrackColor: AppColors.bgColor,
+                        inactiveThumbColor: Colors.black,
+                      ),
+                  ],
                 ),
               ),
-              SizedBox(height: 6.h),
-              Text(
-                actuator.name,
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  color: actuator.isOn ? AppColors.white : AppColors.black,
-                  fontSize: 20.sp,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-              SizedBox(height: 2.h),
-              if (actuator is MultiStageActuator)
-                _buildStageIndicator(actuator)
-              else
-                Switch.adaptive(
-                  value: actuator.isOn,
-                  onChanged: (value) => _changeActuatorState(index, value),
-                  activeColor: Colors.white,
-                  trackOutlineColor: WidgetStateProperty.all(Colors.grey),
-                  inactiveTrackColor: AppColors.bgColor,
-                  inactiveThumbColor: Colors.black,
-                ),
-            ],
-          ),
-        ),
-      ),
-    );
+            ),
+          );
+        });
   }
 
   Widget _buildStageIndicator(MultiStageActuator actuator) {
@@ -214,7 +286,7 @@ class _ManualScreenState extends State<ManualScreen> {
         borderRadius: BorderRadius.circular(8.r),
       ),
       child: Text(
-        actuator.currentStageName,
+        actuator.stages[actuator.currentStage].name,
         style: TextStyle(
           color: Colors.white,
           fontSize: 14.sp,
@@ -269,7 +341,8 @@ class _ManualScreenState extends State<ManualScreen> {
                             ? Icon(Icons.check, color: Colors.white)
                             : null,
                     onTap: () {
-                      _selectGrowLightStage(actuator.stages.indexOf(stage));
+                      _selectGrowLightStage(
+                          actuator.stages.indexOf(stage), actuator);
                       Navigator.pop(context);
                     },
                   );

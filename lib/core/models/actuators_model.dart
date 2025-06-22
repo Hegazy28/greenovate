@@ -3,36 +3,30 @@ import 'package:flutter/material.dart';
 abstract class Actuator {
   String get name;
   String get image;
-  bool get isOn;
-
-  void toggle();
-  void setState(bool value);
-  void reset();
+  List<Stage> get stages;
+  int get currentStage;
 }
 
 class SimpleActuator implements Actuator {
   @override
   final String name;
+
   @override
   final String image;
-  bool _isOn = false;
+  @override
+  List<Stage> stages;
+  @override
+  int currentStage = 0;
 
   SimpleActuator({
     required this.name,
     required this.image,
+    required this.stages,
+    this.currentStage = 0,
   });
-
-  @override
-  bool get isOn => _isOn;
-
-  @override
-  void toggle() => _isOn = !_isOn;
-
-  @override
-  void setState(bool value) => _isOn = value;
-
-  @override
-  void reset() => _isOn = false;
+  void selectStage(int index) {
+    currentStage = index.clamp(0, stages.length - 1);
+  }
 }
 
 class MultiStageActuator implements Actuator {
@@ -40,39 +34,20 @@ class MultiStageActuator implements Actuator {
   final String name;
   @override
   final String image;
+  @override
   final List<Stage> stages;
-  int _currentStage = 0;
+  @override
+  int currentStage = 0;
 
   MultiStageActuator({
     required this.name,
     required this.image,
     required this.stages,
+    this.currentStage = 0,
   });
-
-  @override
-  bool get isOn => _currentStage > 0;
-
-  String get currentStageName => stages[_currentStage].name;
-  int get currentStage => _currentStage;
-
   void selectStage(int index) {
-    _currentStage = index.clamp(0, stages.length - 1);
+    currentStage = index.clamp(0, stages.length - 1);
   }
-
-  @override
-  void toggle() {}
-
-  @override
-  void setState(bool value) {
-    if (value && _currentStage == 0) {
-      _currentStage = 1;
-    } else if (!value) {
-      _currentStage = 0;
-    }
-  }
-
-  @override
-  void reset() => _currentStage = 0;
 }
 
 class Stage {

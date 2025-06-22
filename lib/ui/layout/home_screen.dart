@@ -5,6 +5,7 @@ import 'package:greenovate/core/constants/app_colors.dart';
 import 'package:greenovate/core/constants/app_styles.dart';
 import 'package:greenovate/core/models/sensor_model.dart';
 import 'package:greenovate/core/widgets/arc.dart';
+import 'package:greenovate/firebase/firebase_helper.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -14,6 +15,7 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
+  double selectedValue = 0.0;
   int _selectedIndex = 0;
   @override
   Widget build(BuildContext context) {
@@ -33,9 +35,17 @@ class _HomeScreenState extends State<HomeScreen> {
                         bottomLeft: Radius.circular(40)),
                     color: AppColors.primary),
                 child: SafeArea(
-                  child: CircularArc(
-                    progress: SensorModel.Sensors[_selectedIndex].value,
-                    unit: SensorModel.Sensors[_selectedIndex].unit,
+                  child: StreamBuilder<Object>(
+                    stream: FirebaseHelper.listenToData(
+                                  SensorModel.Sensors[_selectedIndex].path),
+                    builder: (context, snapshot) {
+                      return CircularArc(
+                        progress: snapshot.hasData
+                            ? snapshot.data as double
+                            : 0.0,
+                        unit: SensorModel.Sensors[_selectedIndex].unit,
+                      );
+                    }
                   ),
                 ),
               ),
@@ -66,6 +76,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 itemBuilder: (context, index) => InkWell(
                   onTap: () {
                     _selectedIndex = index;
+
                     setState(() {});
                   },
                   child: Container(
@@ -75,13 +86,13 @@ class _HomeScreenState extends State<HomeScreen> {
                             ? AppColors.primary
                             : Colors.white,
                         borderRadius: BorderRadius.all(Radius.circular(30))),
-                    width: 200.w,
+                    width: 150.w,
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.start,
                       children: [
                         SizedBox(
-                            height: 70.h,
-                            width: 70.w,
+                            height: 55.h,
+                            width: 55.w,
                             child: Image.asset(
                               SensorModel.Sensors[index].image,
                               color: _selectedIndex == index
@@ -94,19 +105,46 @@ class _HomeScreenState extends State<HomeScreen> {
                               color: _selectedIndex == index
                                   ? Colors.white
                                   : Colors.black,
-                              fontSize: 20.sp),
+                              fontSize: 18.sp),
                           textAlign: TextAlign.end,
                         ),
                         Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            Text(
-                              "${SensorModel.Sensors[index].value}",
-                              style: AppStyles.sairaCondensed24white.copyWith(
-                                  fontSize: 40,
-                                  color: _selectedIndex == index
-                                      ? Colors.white
-                                      : Colors.black),
+                            StreamBuilder<double>(
+                              stream: FirebaseHelper.listenToData(
+                                  SensorModel.Sensors[index].path),
+                              builder: (context, snapshot) {
+                                 
+                                if (!snapshot.hasData) {
+                                  return CircularProgressIndicator(
+                                    color: AppColors.white,
+                                  );
+                                }
+                                // if (snapshot.connectionState ==
+                                //     ConnectionState.waiting) {
+                                //   return Text(
+                                //     "No data",
+                                //     style: AppStyles.sairaCondensed24white
+                                //         .copyWith(
+                                //             fontSize: 30,
+                                //             color: _selectedIndex == index
+                                //                 ? Colors.white
+                                //                 : Colors.black),
+                                //   );
+                                // }
+                                // Assuming snapshot.data is the value you want to display
+                                //print("Data: ${snapshot.data!}");
+                                return Text(
+                                  "${snapshot.data!}",
+                                  style: AppStyles.sairaCondensed24white
+                                      .copyWith(
+                                          fontSize: 30,
+                                          color: _selectedIndex == index
+                                              ? Colors.white
+                                              : Colors.black),
+                                );
+                              },
                             ),
                             Text(SensorModel.Sensors[index].unit,
                                 style: AppStyles.sairaCondensed24white.copyWith(

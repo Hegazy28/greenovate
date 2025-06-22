@@ -5,18 +5,24 @@ import 'dart:math' as math;
 import 'package:greenovate/core/constants/app_colors.dart';
 import 'package:greenovate/core/constants/app_styles.dart';
 
-// Placeholder for your custom imports (replace with actual imports)
-const Color black = Colors.black; // Placeholder for AppColors.black
-final TextStyle sairaCondensed24white = TextStyle(fontFamily: 'Saira Condensed', fontSize: 24); // Placeholder for AppStyles.sairaCondensed24white
-
 class CircularArc extends StatefulWidget {
   final double progress;
   final String unit;
+  final Duration animationDuration;
+  final Color? progressColor;
+  final Color? backgroundColor;
+  final double? strokeWidth;
+  final int decimalPlaces;
 
   const CircularArc({
     super.key,
     required this.progress,
     required this.unit,
+    this.animationDuration = const Duration(seconds: 2),
+    this.progressColor,
+    this.backgroundColor,
+    this.strokeWidth = 20,
+    this.decimalPlaces = 1,
   });
 
   @override
@@ -32,8 +38,10 @@ class _CircularArcState extends State<CircularArc>
   @override
   void initState() {
     super.initState();
-    animController =
-        AnimationController(duration: Duration(seconds: 2), vsync: this);
+    animController = AnimationController(
+      duration: widget.animationDuration,
+      vsync: this,
+    );
     _setupAnimation(widget.progress);
   }
 
@@ -43,18 +51,29 @@ class _CircularArcState extends State<CircularArc>
     if (widget.progress != oldWidget.progress) {
       _setupAnimation(widget.progress);
     }
+    if (widget.animationDuration != oldWidget.animationDuration) {
+      animController.duration = widget.animationDuration;
+    }
   }
 
   void _setupAnimation(double newProgress) {
-    final startProgress = previousProgress / 100 * math.pi;
-    final endProgress = newProgress / 100 * math.pi;
-    final curvedAnimation =
-        CurvedAnimation(parent: animController, curve: Curves.easeInOutCubic);
+    // Clamp progress between 0 and 100
+    final clampedProgress = newProgress.clamp(0.0, 100.0);
+    
+    final startProgress = previousProgress / 100.0 * math.pi;
+    final endProgress = clampedProgress / 100.0 * math.pi;
+    
+    final curvedAnimation = CurvedAnimation(
+      parent: animController,
+      curve: Curves.easeInOutCubic,
+    );
 
-    animation = Tween<double>(begin: startProgress, end: endProgress)
-        .animate(curvedAnimation)
+    animation = Tween<double>(
+      begin: startProgress,
+      end: endProgress,
+    ).animate(curvedAnimation)
       ..addListener(() {
-        if (mounted) { // Check if the widget is still mounted
+        if (mounted) {
           setState(() {});
         }
       });
@@ -62,20 +81,21 @@ class _CircularArcState extends State<CircularArc>
     animController
       ..reset()
       ..forward();
-    previousProgress = newProgress;
+    
+    previousProgress = clampedProgress;
   }
 
   @override
   void dispose() {
-    animController.stop(); // Stop the animation
-    animController.dispose(); // Dispose of the controller
+    animController.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    String unit = widget.unit;
-
+    final progressValue = (animation.value / math.pi * 100.0);
+    final displayValue = progressValue.toStringAsFixed(widget.decimalPlaces);
+    
     return Center(
       child: SizedBox(
         width: 280.w,
@@ -84,40 +104,49 @@ class _CircularArcState extends State<CircularArc>
           clipBehavior: Clip.none,
           alignment: Alignment.center,
           children: [
+            // Background arc
             CustomPaint(
               size: Size(260.w, 260.w),
               painter: ProgressArc(
                 math.pi,
-                Colors.black54,
+                widget.backgroundColor ?? Colors.black26,
+                widget.strokeWidth ?? 20,
                 true,
               ),
             ),
+            // Progress arc
             CustomPaint(
               size: Size(260.w, 260.w),
               painter: ProgressArc(
                 animation.value,
-                AppColors.arcDash,
+                widget.progressColor ?? AppColors.arcDash,
+                widget.strokeWidth ?? 20,
                 false,
               ),
             ),
+            // Dashed outer ring
             CustomPaint(
               size: Size(260.w, 260.w),
               painter: DashedArcPainter(
                 animation.value,
               ),
             ),
+            // Inner circle
             Container(
               width: 240.w,
               height: 240.w,
-              decoration: BoxDecoration(
+              decoration: const BoxDecoration(
                 shape: BoxShape.circle,
                 color: Colors.white,
               ),
             ),
+            // Progress text
             Text(
-              "${(animation.value / math.pi * 100).round()}$unit",
-              style: AppStyles.sairaCondensed24white  .copyWith(
-                  color: black, fontSize: 36.sp),
+              "$displayValue${widget.unit}",
+              style: AppStyles.sairaCondensed24white.copyWith(
+                color: Colors.black,
+                fontSize: 36.sp,
+              ),
             ),
           ],
         ),
@@ -130,70 +159,96 @@ class ProgressArc extends CustomPainter {
   final bool isBackground;
   final double arc;
   final Color progressColor;
+  final double strokeWidth;
 
-  ProgressArc(this.arc, this.progressColor, this.isBackground);
+  const ProgressArc(
+    this.arc,
+    this.progressColor,
+    this.strokeWidth,
+    this.isBackground,
+  );
 
   @override
   void paint(Canvas canvas, Size size) {
     final rect = Rect.fromLTWH(0, 0, size.width, size.height);
-    final startAngle = -math.pi;
+    const startAngle = -math.pi;
     final sweepAngle = arc;
-    final userCenter = false;
 
     final paint = Paint()
       ..strokeCap = StrokeCap.round
       ..color = progressColor
       ..style = PaintingStyle.stroke
-      ..strokeWidth = 20;
+      ..strokeWidth = strokeWidth;
 
-    canvas.drawArc(rect, startAngle, sweepAngle, userCenter, paint);
+    canvas.drawArc(rect, startAngle, sweepAngle, false, paint);
   }
 
   @override
   bool shouldRepaint(covariant CustomPainter oldDelegate) {
-    return true;
+    return oldDelegate is ProgressArc &&
+        (oldDelegate.arc != arc ||
+            oldDelegate.progressColor != progressColor ||
+            oldDelegate.strokeWidth != strokeWidth);
   }
 }
 
 class DashedArcPainter extends CustomPainter {
   final double progress;
+  final Color dashColor;
+  final double dashWidth;
+  final double dashSpace;
+  final double strokeWidth;
 
-  DashedArcPainter(this.progress);
+  const DashedArcPainter(
+    this.progress, {
+    this.dashColor = Colors.green, // Default color, replace with AppColors.arcSolid
+    this.dashWidth = 6,
+    this.dashSpace = 4,
+    this.strokeWidth = 10,
+  });
 
   @override
   void paint(Canvas canvas, Size size) {
     final outerRadius = size.width / 2 + 15;
-    final rect = Rect.fromLTWH(size.width / 2 - outerRadius,
-        size.height / 2 - outerRadius, outerRadius * 2, outerRadius * 2);
-    final startAngle = -math.pi;
-    final sweepAngle = progress + 0.1;
+    final center = Offset(size.width / 2, size.height / 2);
+    final rect = Rect.fromCircle(center: center, radius: outerRadius);
+    
+    const startAngle = -math.pi;
+    final sweepAngle = progress + 0.06;
 
     final paint = Paint()
-      ..color = AppColors.arcSolid
+      ..color = dashColor
       ..style = PaintingStyle.stroke
-      ..strokeWidth = 4;
+      ..strokeWidth = strokeWidth;
 
-    const dashWidth = 3;
-    const dashSpace = 1;
+    // Calculate dash parameters
+    final circumference = 2 * math.pi * outerRadius;
+    final dashLengthInRadians = dashWidth / circumference * 2 * math.pi;
+    final dashSpaceInRadians = dashSpace / circumference * 2 * math.pi;
+    final dashStepInRadians = dashLengthInRadians + dashSpaceInRadians;
 
-    final totalDashes = (sweepAngle /
-            (dashWidth / outerRadius * 2 * math.pi +
-                dashSpace / outerRadius * 2 * math.pi))
-        .floor();
-
-    for (int i = 0; i < totalDashes; i++) {
-      final dashStartAngle =
-          startAngle + i * (dashWidth + dashSpace) / outerRadius * 2 * math.pi;
-      final dashEndAngle =
-          dashStartAngle + dashWidth / outerRadius * 2 * math.pi;
-
+    // Draw dashes
+    double currentAngle = startAngle;
+    while (currentAngle < startAngle + sweepAngle) {
+      final dashEndAngle = math.min(
+        currentAngle + dashLengthInRadians,
+        startAngle + sweepAngle,
+      );
+      
       canvas.drawArc(
-          rect, dashStartAngle, dashEndAngle - dashStartAngle, false, paint);
+        rect,
+        currentAngle,
+        dashEndAngle - currentAngle,
+        false,
+        paint,
+      );
+      
+      currentAngle += dashStepInRadians;
     }
   }
 
   @override
-  bool shouldRepaint(CustomPainter oldDelegate) {
-    return false;
+  bool shouldRepaint(covariant CustomPainter oldDelegate) {
+    return oldDelegate is DashedArcPainter && oldDelegate.progress != progress;
   }
 }

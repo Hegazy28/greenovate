@@ -1,3 +1,4 @@
+import 'package:dot_navigation_bar/dot_navigation_bar.dart';
 import 'package:flutter/material.dart';
 import 'package:greenovate/core/constants/app_assets.dart';
 import 'package:greenovate/core/constants/app_colors.dart';
@@ -8,7 +9,6 @@ import 'package:local_auth/local_auth.dart';
 
 class LayoutScreen extends StatefulWidget {
   const LayoutScreen({super.key});
-
   @override
   State<LayoutScreen> createState() => _LayoutScreenState();
 }
@@ -24,51 +24,8 @@ class _LayoutScreenState extends State<LayoutScreen> {
     HomeScreen(),
     ManualScreen(),
     CropsScreen(),
+    CropsScreen(),
   ];
-
-  Future<void> _authenticateUser() async {
-    try {
-      final bool canAuthenticate =
-          await _auth.canCheckBiometrics || await _auth.isDeviceSupported();
-
-      if (!canAuthenticate) {
-        setState(() {
-          _isLoading = false;
-          _errorMessage = 'Authentication not available on this device';
-          _isAuthenticated = true; // Bypass auth if not supported
-        });
-        return;
-      }
-
-      final bool didAuthenticate = await _auth.authenticate(
-        localizedReason: 'Authenticate to access the app',
-        options: const AuthenticationOptions(
-          biometricOnly: false,
-          useErrorDialogs: true,
-          stickyAuth: true,
-        ),
-      );
-
-      setState(() {
-        _isAuthenticated = didAuthenticate;
-        _isLoading = false;
-        _errorMessage = didAuthenticate ? null : 'Authentication failed';
-      });
-    } catch (e) {
-      setState(() {
-        _isLoading = false;
-        _errorMessage = 'Authentication error occurred';
-      });
-    }
-  }
-
-  Future<void> _retryAuthentication() async {
-    setState(() {
-      _isLoading = true;
-      _errorMessage = null;
-    });
-    await _authenticateUser();
-  }
 
   @override
   void initState() {
@@ -85,28 +42,63 @@ class _LayoutScreenState extends State<LayoutScreen> {
     }
 
     return Scaffold(
-      backgroundColor: AppColors.bgColor,
-      bottomNavigationBar: ClipRRect(
-        borderRadius: BorderRadius.only(
-            topLeft: Radius.circular(20), topRight: Radius.circular(20)),
-        child: BottomNavigationBar(
-          selectedItemColor: AppColors.white,
-          unselectedItemColor: AppColors.black,
-          currentIndex: _currentIndex,
-          onTap: (value) => setState(() => _currentIndex = value),
-          type: BottomNavigationBarType.fixed,
-          backgroundColor: AppColors.primary,
-          items: const [
-            BottomNavigationBarItem(
-              
-                icon: ImageIcon(AssetImage(AppAssets.sensors)), label: "Sensors"),
-            BottomNavigationBarItem(
-                icon: ImageIcon(AssetImage(AppAssets.manual)), label: "Manual"),
-            BottomNavigationBarItem(
-                icon: ImageIcon(AssetImage(AppAssets.crops)), label: "Crops"),
-          ],
-        ),
+      extendBody: true,
+
+      bottomNavigationBar: DotNavigationBar(
+        borderRadius: 16,
+        splashColor: AppColors.primary,
+        enableFloatingNavBar: true,
+        selectedItemColor: AppColors.white,
+        enablePaddingAnimation: true,
+        curve: Curves.easeOutCirc,
+        currentIndex: _currentIndex,
+        backgroundColor: AppColors.primary,
+        dotIndicatorColor: AppColors.transparent,
+        paddingR: EdgeInsets.symmetric(vertical: 4, horizontal: 0),
+        margin: EdgeInsets.symmetric(vertical: 0, horizontal: 0),
+        marginR: EdgeInsets.symmetric(vertical: 0, horizontal: 0),
+        onTap: (value) {
+          setState(() {
+            _currentIndex = value;
+          });
+        },
+        items: [
+          DotNavigationBarItem(
+            icon: ImageIcon(AssetImage(AppAssets.sensors)),
+          ),
+          DotNavigationBarItem(
+            icon: ImageIcon(AssetImage(AppAssets.manual)),
+          ),
+          DotNavigationBarItem(
+            icon: ImageIcon(AssetImage(AppAssets.crops)),
+          ),
+          DotNavigationBarItem(
+            icon: ImageIcon(AssetImage(AppAssets.sensors)),
+          ),
+        ],
       ),
+
+      // ClipRRect(
+      //   borderRadius: BorderRadius.only(
+      //       topLeft: Radius.circular(20), topRight: Radius.circular(20)),
+      //   child: BottomNavigationBar(
+      //     selectedItemColor: AppColors.white,
+      //     unselectedItemColor: AppColors.black,
+      //     currentIndex: _currentIndex,
+      //     onTap: (value) => setState(() => _currentIndex = value),
+      //     type: BottomNavigationBarType.fixed,
+      //     backgroundColor: AppColors.primary,
+      //     items: const [
+      //       BottomNavigationBarItem(
+      //           icon: ImageIcon(AssetImage(AppAssets.sensors)),
+      //           label: "Sensors"),
+      //       BottomNavigationBarItem(
+      //           icon: ImageIcon(AssetImage(AppAssets.manual)), label: "Manual"),
+      //       BottomNavigationBarItem(
+      //           icon: ImageIcon(AssetImage(AppAssets.crops)), label: "Crops"),
+      //     ],
+      //   ),
+      // ),
       body: IndexedStack(
         index: _currentIndex,
         children: _tabs,
@@ -143,7 +135,7 @@ class _LayoutScreenState extends State<LayoutScreen> {
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontSize: 16,
-                  color: AppColors.black.withOpacity(0.7),
+                  color: AppColors.black.withValues(alpha: 0.7) ,
                 ),
               ),
               const SizedBox(height: 30),
@@ -172,5 +164,49 @@ class _LayoutScreenState extends State<LayoutScreen> {
         ),
       ),
     );
+  }
+
+  Future<void> _authenticateUser() async {
+    try {
+      final bool canAuthenticate =
+          await _auth.canCheckBiometrics || await _auth.isDeviceSupported();
+
+      if (!canAuthenticate) {
+        setState(() {
+          _isLoading = false;
+          _errorMessage = 'Authentication not available on this device';
+          _isAuthenticated = true; // Bypass auth if not supported
+        });
+        return;
+      }
+
+      final bool didAuthenticate = await _auth.authenticate(
+        localizedReason: 'Authenticate to access your greenhouse',
+        options: const AuthenticationOptions(
+          biometricOnly: false,
+          useErrorDialogs: true,
+          stickyAuth: true,
+        ),
+      );
+
+      setState(() {
+        _isAuthenticated = didAuthenticate;
+        _isLoading = false;
+        _errorMessage = didAuthenticate ? null : 'Authentication failed';
+      });
+    } catch (e) {
+      setState(() {
+        _isLoading = false;
+        _errorMessage = 'Authentication error occurred';
+      });
+    }
+  }
+
+  Future<void> _retryAuthentication() async {
+    setState(() {
+      _isLoading = true;
+      _errorMessage = null;
+    });
+    await _authenticateUser();
   }
 }
